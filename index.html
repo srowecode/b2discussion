@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opinion Exchange Lessons</title>
+    <style>
+        :root {
+            --primary: #4f46e5;       
+            --primary-light: #818cf8; 
+            --bg-color: #f8fafc;      
+            --card-bg: #ffffff;
+            --text-dark: #334155;     
+            --text-light: #64748b;    
+            --border: #e2e8f0;
+            --accent: #f59e0b;        
+            --success: #10b981;       
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        body.hide-jpn .jpn-text { display: none !important; }
+        
+        .toggle-jpn-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .container {
+            max-width: 1200px; 
+            margin: 20px auto; 
+            padding: 0 15px;
+        }
+
+        .class-selector {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid var(--primary-light);
+            border-radius: 8px;
+            min-width: 200px;
+        }
+
+        .opinion-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .opinion-column {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .question-list { list-style-type: none; padding: 0; }
+        .question-list li {
+            padding: 12px 0;
+            border-bottom: 1px dashed var(--border);
+            font-size: 1.05rem;
+        }
+
+        .grammar-box, .expression-box {
+            background: #f0fdf4;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #bbf7d0;
+            margin-bottom: 15px;
+        }
+        
+        .example-list { padding-left: 0; list-style: none; margin-bottom: 0; }
+        .example-list li { padding: 6px 0; border-bottom: 1px dashed #cbd5e1; display: flex; align-items: flex-start; gap: 8px; }
+        .example-list li:last-child { border-bottom: none; }
+        .example-text { font-size: 0.95rem; display: block; font-weight: 600; color: var(--text-dark); }
+        .example-trans { color: var(--text-light); font-size: 0.85rem; display: block; }
+
+        .expression-box {
+            background: #eff6ff;
+            border-color: var(--primary-light);
+        }
+
+        .audio-btn {
+            background: none; border: none; cursor: pointer; font-size: 1.2rem;
+            color: var(--primary); padding: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <h1 class="hero-title">Advanced Discussion Lessons</h1>
+        <p>CEFR B2 Level (50 Lessons)</p>
+    </header>
+
+    <div class="container">
+        <div class="class-selector">
+            <label for="lessonSelect">Select Lesson:</label>
+            <select id="lessonSelect" onchange="loadLesson()"></select>
+            <button class="toggle-jpn-btn" onclick="toggleJapanese()">👁️ Toggle Japanese</button>
+        </div>
+        <div id="lessonContent"></div>
+    </div>
+
+    <script src="curriculum.js"></script>
+    <script>
+        function toggleJapanese() {
+            document.body.classList.toggle('hide-jpn');
+        }
+
+        function playAudio(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US'; 
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function initApp() {
+            const selectEl = document.getElementById("lessonSelect");
+            curriculum.forEach((lesson, index) => {
+                const option = document.createElement("option");
+                option.value = index;
+                option.textContent = lesson.level + " - " + lesson.title;
+                selectEl.appendChild(option);
+            });
+            loadLesson();
+        }
+
+        function loadLesson() {
+            const index = parseInt(document.getElementById("lessonSelect").value);
+            const lesson = curriculum[index];
+            const container = document.getElementById("lessonContent");
+            
+            let html = `
+                <h2>${lesson.title}</h2>
+                <div class="opinion-layout">
+                    <div class="opinion-column">
+                        <h3>10 Discussion Questions</h3>
+                        <ul class="question-list">
+                            ${lesson.questions.map(q => `
+                                <li>
+                                    ${q.eng}
+                                    <button class="audio-btn" style="font-size: 1rem; margin-left: 5px;" onclick="playAudio('${q.eng.replace(/'/g, "\\'")}')">🔊</button>
+                                    <div class="jpn-text" style="color:var(--text-light); margin-top:4px;">${q.jpn}</div>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="opinion-column">
+                        <h3>Grammar Points</h3>
+                        ${lesson.grammarPoints.map(g => `
+                            <div class="grammar-box">
+                                <h4 style="margin:0 0 5px 0; color:var(--success);">${g.point}</h4>
+                                <p style="margin:0 0 5px 0;">${g.explanation}</p>
+                                <p class="jpn-text" style="margin:0 0 10px 0; font-size:0.85rem; color:var(--text-light);">${g.explanationJpn}</p>
+                                
+                                <ul class="example-list">
+                                    ${g.examples.map(ex => `
+                                        <li>
+                                            <button class="audio-btn" style="font-size:1rem;" onclick="playAudio('${ex.eng.replace(/'/g, "\\'")}')">🔊</button>
+                                            <div>
+                                                <span class="example-text">${ex.eng}</span>
+                                                <span class="example-trans jpn-text">${ex.jpn}</span>
+                                            </div>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        `).join('')}
+                        
+                        <div class="expression-box">
+                            <h4 style="margin:0 0 10px 0; color:var(--primary);">Transitional Expressions (5)</h4>
+                            <ul style="padding-left: 20px; margin: 0;">
+                                ${lesson.expressions.map(exp => `
+                                    <li style="margin-bottom: 5px;">
+                                        <strong>${exp.eng}</strong>
+                                        <span class="jpn-text" style="font-size:0.85rem; color:var(--text-light); display:block;">${exp.jpn}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                </div>`;
+            container.innerHTML = html;
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
